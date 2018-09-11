@@ -10,8 +10,7 @@ def open_and_read_file(file_path):
     the file's contents as one string of text.
     """
 
-    file = open(file_path)
-    text = file.read()
+    text = open(file_path).read()
 
     # return 
     return text
@@ -55,23 +54,37 @@ def make_chains(text_string):
         key = (words[i], words[i+1])
         # if this tuple is already in the dictionary, get the list of 
         # nextwords that are its value. 
-        next_word = chains.get(key, [])
-        next_word.append(words[i+2])
+        next_words = chains.get(key, [])
+        next_words.append(words[i+2])
       
         # enter our (word1, word2):[next_words] into dictionary
-        chains[key] = next_word
+        chains[key] = next_words
 
-
-    print (chains)
+    # print(chains)
     return chains
 
 
 def make_text(chains):
     """Return text from chains."""
-
     words = []
 
-    # your code goes here
+    # Get our starting two words by randomly using one of the 
+    # keys in our chains dictionary
+    (word1, word2) = choice(list(chains))
+
+    # Add the first two words to the return text
+    words.extend([word1, word2])
+
+    while True:
+        key = (word1, word2)
+        possible_next_words = chains.get(key, None)
+        if possible_next_words == None:
+            break
+        next_word = choice(possible_next_words)
+        words.append(next_word)
+
+        word1 = word2
+        word2 = next_word
 
     return " ".join(words)
 
@@ -86,5 +99,6 @@ chains = make_chains(input_text)
 
 # Produce random text
 random_text = make_text(chains)
+random_text = random_text.replace('? ', '?\n')
 
 print(random_text)
