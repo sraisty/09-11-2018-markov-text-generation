@@ -70,7 +70,7 @@ def make_text(chains):
 
     # Get our starting two words by randomly using one of the 
     # keys in our chains dictionary
-    (word1, word2) = choice(list(chains))
+    word1, word2 = choice(list(chains))
 
     # Add the first two words to the return text
     words.extend([word1, word2])
@@ -89,7 +89,9 @@ def make_text(chains):
     return " ".join(words)
 
 
-input_path = "green-eggs.txt"
+# input_path = "green-eggs.txt"
+input_path = 'great-expectations.txt'
+
 
 # Open the file and turn it into one long string
 input_text = open_and_read_file(input_path)
