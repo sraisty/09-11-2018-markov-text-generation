@@ -17,7 +17,7 @@ def open_and_read_file(file_path):
     return text
 
 
-def make_chains(text_string, ngram_level):
+def make_chains(chains, text_string, ngram_level):
     """Take input text as string; return dictionary of Markov chains.
 
     A chain will be a key that consists of a tuple of (word1, word2)
@@ -41,7 +41,6 @@ def make_chains(text_string, ngram_level):
         >>> chains[('there','juanita')]
         [None]
     """
-    chains = {}
 
     # your code goes here
     words = text_string.split()
@@ -77,40 +76,54 @@ def make_text(chains, ngram_level):
             break;
 
 
-    # print(key)
-
-    window = list(key)
-    # print(f"window1: {window}")
-
     # Add the first n words, which are the key, to the return text
     words.extend(key)
 
+
     while True:
+        # With our key, get the possible next words and then pick one at random
         possible_next_words = chains.get(key, None)
         if possible_next_words == None:
             break
         next_word = choice(possible_next_words)
-        window.append(next_word)
+
+        # Add the selected next_word to our output text
         words.append(next_word)
-        window.pop(0)
 
-        key = tuple(window)
-        # print(f"new key: {key}")
+        # Now, look at the next set of words. Change our key to be the last
+        # n words in our wordlist, and do the loop again
+        key = tuple(words[-ngram_level:])
 
+
+
+    # To make sure our text ends with a complete sentence:
+    # from end of list, look for the last word that has sentence-ending 
+    # punctuation. If it doesn't, chop that word from the list.
+    while True:
+        last_char = words[-1][-1]
+        if last_char in ['.', '?', '!']:
+            break;
+        else:    
+            words.pop()
+
+    # Make string out of all the words in the list with spaces in between
     return " ".join(words)
 
 
 
 
-input_path = argv[1]
-ngram_level = int(argv[2])
 
+filenames = argv[2:]
+ngram_level = int(argv[1])
 
-# Open the file and turn it into one long string
-input_text = open_and_read_file(input_path)
+# Open each file and add it to the chains dictionary
+chains = {}
 
-# Get a Markov chain
-chains = make_chains(input_text, ngram_level)
+for input_file in filenames:    
+    input_text = open_and_read_file(input_file)
+
+    # Get a Markov chain
+    chains = make_chains(chains, input_text, ngram_level)
 
 # Produce random text
 random_text = make_text(chains, ngram_level)
