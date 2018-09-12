@@ -1,6 +1,7 @@
 """Generate Markov text from text files."""
 
 from random import choice
+from sys import argv
 
 
 def open_and_read_file(file_path):
@@ -16,7 +17,7 @@ def open_and_read_file(file_path):
     return text
 
 
-def make_chains(text_string):
+def make_chains(text_string, ngram_level):
     """Take input text as string; return dictionary of Markov chains.
 
     A chain will be a key that consists of a tuple of (word1, word2)
@@ -45,62 +46,74 @@ def make_chains(text_string):
     # your code goes here
     words = text_string.split()
 
-    # We look a the 3 words at list starting at words[i], 
-    # so to make sure we don't look at items outside the list
-    # we only loop to where words[i] is the second-to-last 
-    # item in words
-    for i in range(len(words) - 2):
-        # create our tuple that will be a key for this key:value pair
-        key = (words[i], words[i+1])
-        # if this tuple is already in the dictionary, get the list of 
-        # nextwords that are its value. 
+    # We look a the first n words in list starting at words[i], 
+    for i in range(len(words) - ngram_level):
+        # create our tuple that will be a key 
+        key = tuple(words[i:i + ngram_level])
+        # if this tuple is already in the dictionary, get its list of 
+        # possible next words. 
         next_words = chains.get(key, [])
-        next_words.append(words[i+2])
+        next_words.append(words[i + ngram_level])
       
-        # enter our (word1, word2):[next_words] into dictionary
+        # putkey tuple and its list of next words into dictionary
         chains[key] = next_words
-
+    
     # print(chains)
     return chains
 
 
-def make_text(chains):
-    """Return text from chains."""
+def make_text(chains, ngram_level):
+    """Return randomly=generated text from chains."""
+
     words = []
 
     # Get our starting two words by randomly using one of the 
     # keys in our chains dictionary
-    word1, word2 = choice(list(chains))
+    # If our choice doesn't begin with a capital letter, try again.
+    while True:
+        key = choice(list(chains))
+        if key[0].istitle():
+            # found a first word that begins with a capital letter
+            break;
 
-    # Add the first two words to the return text
-    words.extend([word1, word2])
+
+    # print(key)
+
+    window = list(key)
+    # print(f"window1: {window}")
+
+    # Add the first n words, which are the key, to the return text
+    words.extend(key)
 
     while True:
-        key = (word1, word2)
         possible_next_words = chains.get(key, None)
         if possible_next_words == None:
             break
         next_word = choice(possible_next_words)
+        window.append(next_word)
         words.append(next_word)
+        window.pop(0)
 
-        word1 = word2
-        word2 = next_word
+        key = tuple(window)
+        # print(f"new key: {key}")
 
     return " ".join(words)
 
 
-# input_path = "green-eggs.txt"
-input_path = 'great-expectations.txt'
+
+
+input_path = argv[1]
+ngram_level = int(argv[2])
 
 
 # Open the file and turn it into one long string
 input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
-chains = make_chains(input_text)
+chains = make_chains(input_text, ngram_level)
 
 # Produce random text
-random_text = make_text(chains)
+random_text = make_text(chains, ngram_level)
 random_text = random_text.replace('? ', '?\n')
 
 print(random_text)
